@@ -19,9 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PitiWork.Core.Blazor", "Mod
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "pitiwork-react", "pitiwork-react\pitiwork-react.esproj", "{E10C4CD7-7399-6F71-9414-ED46F25B9D66}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Keycloak 設定", "Keycloak 設定", "{FB9C53E0-AC6E-4C24-9B89-E106730260BF}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "readme", "readme", "{FB9C53E0-AC6E-4C24-9B89-E106730260BF}"
 	ProjectSection(SolutionItems) = preProject
 		keycloak_setting.md = keycloak_setting.md
+		readme.md = readme.md
 	EndProjectSection
 EndProject
 Global
