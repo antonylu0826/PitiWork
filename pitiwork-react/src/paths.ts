@@ -9,5 +9,6 @@ export const paths = {
     settings: '/dashboard/settings',
   },
   testObjects: '/test-objects',
+  calendar: '/dashboard/calendar',
   errors: { notFound: '/errors/not-found' },
 } as const;

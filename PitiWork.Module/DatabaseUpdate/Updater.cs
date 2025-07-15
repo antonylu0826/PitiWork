@@ -7,10 +7,10 @@ using DevExpress.Persistent.BaseImpl;
 using DevExpress.Persistent.BaseImpl.PermissionPolicy;
 using Microsoft.Extensions.DependencyInjection;
 using PitiWork.Core.Authentication;
+using PitiWork.Module.BusinessObjects;
 
 namespace PitiWork.Module.DatabaseUpdate;
 
-// For more typical usage scenarios, be sure to check out https://docs.devexpress.com/eXpressAppFramework/DevExpress.ExpressApp.Updating.ModuleUpdater
 public class Updater : ModuleUpdater
 {
     public Updater(IObjectSpace objectSpace, Version currentDBVersion) :
@@ -101,6 +101,15 @@ public class Updater : ModuleUpdater
             defaultRole.AddObjectPermission<ModelDifferenceAspect>(SecurityOperations.ReadWriteAccess, "Owner.UserId = ToStr(CurrentUserId())", SecurityPermissionState.Allow);
             defaultRole.AddTypePermissionsRecursively<ModelDifference>(SecurityOperations.Create, SecurityPermissionState.Allow);
             defaultRole.AddTypePermissionsRecursively<ModelDifferenceAspect>(SecurityOperations.Create, SecurityPermissionState.Allow);
+
+            defaultRole.AddObjectPermission<PermissionPolicyUser>(SecurityOperations.ReadOnlyAccess, "[Oid] = CurrentUserId()", SecurityPermissionState.Allow);
+
+            // PersonalCalendar permissions
+            defaultRole.AddNavigationPermission(@"Application/NavigationItems/Items/Default/Items/PersonalCalendar_ListView", SecurityPermissionState.Allow);
+            defaultRole.AddObjectPermissionFromLambda<PersonalCalendar>(SecurityOperations.Read, pc => pc.Owner.Oid == (Guid)CurrentUserIdOperator.CurrentUserId(), SecurityPermissionState.Allow);
+            defaultRole.AddObjectPermissionFromLambda<PersonalCalendar>(SecurityOperations.Write, pc => pc.Owner.Oid == (Guid)CurrentUserIdOperator.CurrentUserId(), SecurityPermissionState.Allow);
+            defaultRole.AddObjectPermissionFromLambda<PersonalCalendar>(SecurityOperations.Delete, pc => pc.Owner.Oid == (Guid)CurrentUserIdOperator.CurrentUserId(), SecurityPermissionState.Allow);
+            defaultRole.AddTypePermissionsRecursively<PersonalCalendar>(SecurityOperations.Create, SecurityPermissionState.Allow);
         }
         return defaultRole;
     }

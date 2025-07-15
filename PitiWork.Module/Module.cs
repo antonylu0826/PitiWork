@@ -10,16 +10,19 @@ public sealed class PitiWorkModule : ModuleBase
 {
     public PitiWorkModule()
     {
-        //
-        // PitiWorkModule
-        //
         AdditionalExportedTypes.Add(typeof(DevExpress.Persistent.BaseImpl.ModelDifference));
         AdditionalExportedTypes.Add(typeof(DevExpress.Persistent.BaseImpl.ModelDifferenceAspect));
+
         RequiredModuleTypes.Add(typeof(DevExpress.ExpressApp.SystemModule.SystemModule));
         RequiredModuleTypes.Add(typeof(DevExpress.ExpressApp.Security.SecurityModule));
         RequiredModuleTypes.Add(typeof(DevExpress.ExpressApp.Objects.BusinessClassLibraryCustomizationModule));
         RequiredModuleTypes.Add(typeof(DevExpress.ExpressApp.ConditionalAppearance.ConditionalAppearanceModule));
         RequiredModuleTypes.Add(typeof(DevExpress.ExpressApp.Validation.ValidationModule));
+
+        AdditionalExportedTypes.Add(typeof(DevExpress.Persistent.BaseImpl.Event));
+        AdditionalExportedTypes.Add(typeof(DevExpress.Persistent.BaseImpl.Resource));
+        AdditionalExportedTypes.Add(typeof(PitiWork.Module.BusinessObjects.PersonalCalendar));
+        RequiredModuleTypes.Add(typeof(DevExpress.ExpressApp.Scheduler.SchedulerModuleBase));
 
         RequiredModuleTypes.Add(typeof(PitiWork.Core.CoreModule));
     }

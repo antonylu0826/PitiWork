@@ -1,3 +1,6 @@
+# PotiWork
+## PotiWork 是一個基於 React 和 TypeScript 的開發環境，並以 Keycloak 做為身份驗證機制，以 DevExpress XAF Web API Service 為後端，旨在提供一個快速、現代化的前端開發體驗。
+
 - 建立 Devias Kit 範本
     
     ```bash

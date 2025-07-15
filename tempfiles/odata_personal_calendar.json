@@ -1,0 +1,25 @@
+{
+  "@odata.context": "http://localhost:5003/api/odata/$metadata#PersonalCalendar",
+  "value": [
+    {
+      "Oid": "f81823b8-be17-4149-bf51-5111a27a0fbe",
+      "StartOn": "2025-07-15T00:00:00+08:00",
+      "EndOn": "2025-07-16T00:00:00+08:00",
+      "Subject": "user-admin's Event1",
+      "Description": null,
+      "AllDay": true,
+      "Location": null,
+      "Label": 0,
+      "Status": 0,
+      "Type": 0,
+      "ResourceId": "<ResourceIds>\r\n</ResourceIds>",
+      "RemindIn": null,
+      "ReminderInfoXml": null,
+      "AlarmTime": null,
+      "IsPostponed": false,
+      "RecurrenceInfoXml": null,
+      "RecurrenceInfoXmlBlazor": null,
+      "RecurrencePattern": null
+    }
+  ]
+}

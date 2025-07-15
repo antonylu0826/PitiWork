@@ -5,6 +5,7 @@ import { PlugsConnectedIcon } from '@phosphor-icons/react/dist/ssr/PlugsConnecte
 import { UserIcon } from '@phosphor-icons/react/dist/ssr/User';
 import { UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 import { XSquare } from '@phosphor-icons/react/dist/ssr/XSquare';
+import { CalendarBlankIcon } from '@phosphor-icons/react/dist/ssr/CalendarBlank';
 
 export const navIcons = {
   'chart-pie': ChartPieIcon,
@@ -13,4 +14,5 @@ export const navIcons = {
   'x-square': XSquare,
   user: UserIcon,
   users: UsersIcon,
+  'calendar-blank': CalendarBlankIcon,
 } as Record<string, Icon>;

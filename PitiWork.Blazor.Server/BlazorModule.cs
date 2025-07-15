@@ -20,6 +20,8 @@ public sealed class PitiWorkBlazorModule : ModuleBase
     }
     public PitiWorkBlazorModule()
     {
+        RequiredModuleTypes.Add(typeof(DevExpress.ExpressApp.Scheduler.Blazor.SchedulerBlazorModule));
+
         RequiredModuleTypes.Add(typeof(PitiWork.Core.Blazor.CoreBlazorModule));
     }
     public override IEnumerable<ModuleUpdater> GetModuleUpdaters(IObjectSpace objectSpace, Version versionFromDB)

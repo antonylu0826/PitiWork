@@ -19,6 +19,7 @@
 		<PackageReference Include="DevExpress.ExpressApp.CodeAnalysis" Version="24.2.8" />
 		<PackageReference Include="DevExpress.ExpressApp.ConditionalAppearance" Version="24.2.8" />
 		<PackageReference Include="DevExpress.ExpressApp.Objects" Version="24.2.8" />
+		<PackageReference Include="DevExpress.ExpressApp.Scheduler" Version="24.2.8" />
 		<PackageReference Include="DevExpress.ExpressApp.Security" Version="24.2.8" />
 		<PackageReference Include="DevExpress.ExpressApp.Security.Xpo" Version="24.2.8" />
 		<PackageReference Include="DevExpress.ExpressApp.Validation" Version="24.2.8" />
@@ -29,5 +30,8 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Modules\Core\PitiWork.Core\PitiWork.Core.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Controllers\" />
 	</ItemGroup>
 </Project>

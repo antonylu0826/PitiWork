@@ -41,7 +41,8 @@ public class Startup
                     options.AllowValidationDetailsAccess = false;
                 })
                 .Add<PitiWork.Module.PitiWorkModule>()
-                .Add<PitiWorkBlazorModule>();
+                .Add<PitiWorkBlazorModule>()
+                .AddScheduler();
             builder.ObjectSpaceProviders
                 .AddSecuredXpo((serviceProvider, options) =>
                 {
