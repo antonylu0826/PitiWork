@@ -11,9 +11,17 @@ import ConfirmDeleteDialog from '@/components/calendar/ConfirmDeleteDialog';
 import CalendarToolbar from '@/components/calendar/CalendarToolbar';
 import { getLabelText, getLabelColor } from '@/utils/calendar-labels';
 import { getStatusText, getStatusColor } from '@/utils/calendar-status';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const localizer = momentLocalizer(moment);
+
+const CustomEvent = ({ event }) => (
+  <div>
+    {event.allDay && <AccessTimeIcon sx={{ fontSize: 'medium', verticalAlign: 'middle', mr: 0.5 }} />}
+    <span>{event.title}</span>
+  </div>
+);
 
 interface PersonalCalendarEvent {
   Oid: string;
@@ -31,9 +39,6 @@ interface PersonalCalendarEvent {
   ReminderInfoXml: string | null;
   AlarmTime: string | null;
   IsPostponed: boolean;
-  RecurrenceInfoXml: string | null;
-  RecurrenceInfoXmlBlazor: string | null;
-  RecurrencePattern: string | null;
 }
 
 interface CalendarEvent {
@@ -101,7 +106,7 @@ const CalendarPage: React.FC = () => {
   };
 
   return (
-    <div style={{ height: '80vh', padding: '20px' }}>
+    <div style={{ height: '100vh', padding: '20px' }}>
       <GlobalStyles styles={{
         '.rbc-calendar': {
           fontFamily: 'inherit',
@@ -147,6 +152,10 @@ const CalendarPage: React.FC = () => {
         },
         '.rbc-month-view': {
           borderColor: 'var(--mui-palette-divider)',
+          overflow: 'visible',
+        },
+        '.rbc-month-row': {
+          overflow: 'visible',
         },
         '.rbc-time-view': {
           borderColor: 'var(--mui-palette-divider)',
@@ -174,6 +183,7 @@ const CalendarPage: React.FC = () => {
       </div>
       <Calendar
         localizer={localizer}
+        showAllEvents={true}
         events={events}
         startAccessor="start"
         endAccessor="end"
@@ -193,6 +203,7 @@ const CalendarPage: React.FC = () => {
         }}
         components={{
           toolbar: CalendarToolbar,
+          event: CustomEvent,
         }}
       />
 
@@ -235,16 +246,7 @@ const CalendarPage: React.FC = () => {
                   </Box>
                 </Typography>
               )}
-              {selectedEvent.originalEvent.RecurrenceInfoXml && (
-                <Typography variant="body1">
-                  <strong>Recurrence Info:</strong> {selectedEvent.originalEvent.RecurrenceInfoXml}
-                </Typography>
-              )}
-              {selectedEvent.originalEvent.RecurrencePattern && (
-                <Typography variant="body1">
-                  <strong>Recurrence Pattern:</strong> {selectedEvent.originalEvent.RecurrencePattern}
-                </Typography>
-              )}
+              
               <FormControlLabel
                 control={
                   <Checkbox

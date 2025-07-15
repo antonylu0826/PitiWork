@@ -21,9 +21,6 @@ interface PersonalCalendarEvent {
   ReminderInfoXml: string | null;
   AlarmTime: string | null;
   IsPostponed: boolean;
-  RecurrenceInfoXml: string | null;
-  RecurrenceInfoXmlBlazor: string | null;
-  RecurrencePattern: string | null;
 }
 
 interface EditEventDialogProps {
@@ -43,8 +40,6 @@ const EditEventDialog: React.FC<EditEventDialogProps> = ({ open, onClose, event,
   const [allDay, setAllDay] = useState(false);
   const [label, setLabel] = useState(0);
   const [status, setStatus] = useState(0);
-  const [recurrenceInfoXml, setRecurrenceInfoXml] = useState('');
-  const [recurrencePattern, setRecurrencePattern] = useState('');
 
   useEffect(() => {
     if (event) {
@@ -56,10 +51,17 @@ const EditEventDialog: React.FC<EditEventDialogProps> = ({ open, onClose, event,
       setAllDay(event.AllDay);
       setLabel(event.Label);
       setStatus(event.Status);
-      setRecurrenceInfoXml(event.RecurrenceInfoXml || '');
-      setRecurrencePattern(event.RecurrencePattern || '');
     }
   }, [event]);
+
+  const handleAllDayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = e.target.checked;
+    setAllDay(isChecked);
+    if (isChecked) {
+        setStartTime(moment(startTime).startOf('day').format('YYYY-MM-DDTHH:mm'));
+        setEndTime(moment(endTime).endOf('day').format('YYYY-MM-DDTHH:mm'));
+    }
+  };
 
   const handleSubmit = async () => {
     if (!keycloak.authenticated || !event) {
@@ -77,8 +79,6 @@ const EditEventDialog: React.FC<EditEventDialogProps> = ({ open, onClose, event,
       AllDay: allDay,
       Label: label,
       Status: status,
-      RecurrenceInfoXml: recurrenceInfoXml || null,
-      RecurrencePattern: recurrencePattern || null,
     };
 
     try {
@@ -136,6 +136,16 @@ const EditEventDialog: React.FC<EditEventDialogProps> = ({ open, onClose, event,
           value={location}
           onChange={(e) => setLocation(e.target.value)}
         />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={allDay}
+              onChange={handleAllDayChange}
+              color="primary"
+            />
+          }
+          label="All Day Event"
+        />
         <TextField
           margin="dense"
           label="Start Time"
@@ -159,16 +169,6 @@ const EditEventDialog: React.FC<EditEventDialogProps> = ({ open, onClose, event,
           InputLabelProps={{
             shrink: true,
           }}
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={allDay}
-              onChange={(e) => setAllDay(e.target.checked)}
-              color="primary"
-            />
-          }
-          label="All Day Event"
         />
         <FormControl fullWidth margin="dense">
           <InputLabel id="label-select-label">Label</InputLabel>
@@ -208,26 +208,6 @@ const EditEventDialog: React.FC<EditEventDialogProps> = ({ open, onClose, event,
             ))}
           </Select>
         </FormControl>
-        <TextField
-          margin="dense"
-          label="Recurrence Info XML"
-          type="text"
-          fullWidth
-          multiline
-          rows={3}
-          variant="outlined"
-          value={recurrenceInfoXml}
-          onChange={(e) => setRecurrenceInfoXml(e.target.value)}
-        />
-        <TextField
-          margin="dense"
-          label="Recurrence Pattern"
-          type="text"
-          fullWidth
-          variant="outlined"
-          value={recurrencePattern}
-          onChange={(e) => setRecurrencePattern(e.target.value)}
-        />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">

@@ -1,12 +1,9 @@
 using DevExpress.Data.Filtering;
-using DevExpress.ExpressApp; // For Event base class
 using DevExpress.ExpressApp.Model;
 using DevExpress.Persistent.Base;
-using DevExpress.Persistent.Base.General;
 using DevExpress.Persistent.BaseImpl;
 using DevExpress.Xpo;
 using PitiWork.Core.Authentication;
-using System;
 using System.ComponentModel;
 
 namespace PitiWork.Module.BusinessObjects

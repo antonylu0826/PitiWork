@@ -21,8 +21,6 @@ const AddEventDialog: React.FC<AddEventDialogProps> = ({ open, onClose, onEventA
   const [allDay, setAllDay] = useState(false);
   const [label, setLabel] = useState(0);
   const [status, setStatus] = useState(0);
-  const [recurrenceInfoXml, setRecurrenceInfoXml] = useState('');
-  const [recurrencePattern, setRecurrencePattern] = useState('');
 
   const handleSubmit = async () => {
     if (!keycloak.authenticated) {
@@ -39,8 +37,6 @@ const AddEventDialog: React.FC<AddEventDialogProps> = ({ open, onClose, onEventA
       AllDay: allDay,
       Label: label,
       Status: status,
-      RecurrenceInfoXml: recurrenceInfoXml || null,
-      RecurrencePattern: recurrencePattern || null,
     };
 
     try {
@@ -66,8 +62,6 @@ const AddEventDialog: React.FC<AddEventDialogProps> = ({ open, onClose, onEventA
       setAllDay(false);
       setLabel(0);
       setStatus(0);
-      setRecurrenceInfoXml('');
-      setRecurrencePattern('');
       onClose();
       onEventAdded(); // Refresh events in the calendar
     } catch (error) {
@@ -181,26 +175,6 @@ const AddEventDialog: React.FC<AddEventDialogProps> = ({ open, onClose, onEventA
             ))}
           </Select>
         </FormControl>
-        <TextField
-          margin="dense"
-          label="Recurrence Info XML"
-          type="text"
-          fullWidth
-          multiline
-          rows={3}
-          variant="outlined"
-          value={recurrenceInfoXml}
-          onChange={(e) => setRecurrenceInfoXml(e.target.value)}
-        />
-        <TextField
-          margin="dense"
-          label="Recurrence Pattern"
-          type="text"
-          fullWidth
-          variant="outlined"
-          value={recurrencePattern}
-          onChange={(e) => setRecurrencePattern(e.target.value)}
-        />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">
