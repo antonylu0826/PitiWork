@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Checkbox, FormControlLabel } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Checkbox, FormControlLabel, Select, MenuItem, InputLabel, FormControl, Box } from '@mui/material';
+import { calendarLabels } from '@/utils/calendar-labels';
+import { calendarStatus } from '@/utils/calendar-status';
 import moment from 'moment';
 import { useKeycloak } from '@react-keycloak/web';
 
@@ -17,6 +19,10 @@ const AddEventDialog: React.FC<AddEventDialogProps> = ({ open, onClose, onEventA
   const [startTime, setStartTime] = useState(moment().format('YYYY-MM-DDTHH:mm'));
   const [endTime, setEndTime] = useState(moment().add(1, 'hour').format('YYYY-MM-DDTHH:mm'));
   const [allDay, setAllDay] = useState(false);
+  const [label, setLabel] = useState(0);
+  const [status, setStatus] = useState(0);
+  const [recurrenceInfoXml, setRecurrenceInfoXml] = useState('');
+  const [recurrencePattern, setRecurrencePattern] = useState('');
 
   const handleSubmit = async () => {
     if (!keycloak.authenticated) {
@@ -31,7 +37,10 @@ const AddEventDialog: React.FC<AddEventDialogProps> = ({ open, onClose, onEventA
       StartOn: moment(startTime).toISOString(),
       EndOn: moment(endTime).toISOString(),
       AllDay: allDay,
-      // Other properties can be added as needed, e.g., Label, Status, Type
+      Label: label,
+      Status: status,
+      RecurrenceInfoXml: recurrenceInfoXml || null,
+      RecurrencePattern: recurrencePattern || null,
     };
 
     try {
@@ -55,6 +64,10 @@ const AddEventDialog: React.FC<AddEventDialogProps> = ({ open, onClose, onEventA
       setStartTime(moment().format('YYYY-MM-DDTHH:mm'));
       setEndTime(moment().add(1, 'hour').format('YYYY-MM-DDTHH:mm'));
       setAllDay(false);
+      setLabel(0);
+      setStatus(0);
+      setRecurrenceInfoXml('');
+      setRecurrencePattern('');
       onClose();
       onEventAdded(); // Refresh events in the calendar
     } catch (error) {
@@ -129,6 +142,64 @@ const AddEventDialog: React.FC<AddEventDialogProps> = ({ open, onClose, onEventA
             />
           }
           label="All Day Event"
+        />
+        <FormControl fullWidth margin="dense">
+          <InputLabel id="label-select-label">Label</InputLabel>
+          <Select
+            labelId="label-select-label"
+            id="label-select"
+            value={label}
+            label="Label"
+            onChange={(e) => setLabel(Number(e.target.value))}
+          >
+            {calendarLabels.map((lbl) => (
+              <MenuItem key={lbl.value} value={lbl.value}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{ width: 16, height: 16, bgcolor: lbl.color, borderRadius: '4px', mr: 1 }} />
+                  {lbl.text}
+                </Box>
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl fullWidth margin="dense">
+          <InputLabel id="status-select-label">Status</InputLabel>
+          <Select
+            labelId="status-select-label"
+            id="status-select"
+            value={status}
+            label="Status"
+            onChange={(e) => setStatus(Number(e.target.value))}
+          >
+            {calendarStatus.map((stat) => (
+              <MenuItem key={stat.value} value={stat.value}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{ width: 16, height: 16, bgcolor: stat.color, borderRadius: '4px', mr: 1 }} />
+                  {stat.text}
+                </Box>
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <TextField
+          margin="dense"
+          label="Recurrence Info XML"
+          type="text"
+          fullWidth
+          multiline
+          rows={3}
+          variant="outlined"
+          value={recurrenceInfoXml}
+          onChange={(e) => setRecurrenceInfoXml(e.target.value)}
+        />
+        <TextField
+          margin="dense"
+          label="Recurrence Pattern"
+          type="text"
+          fullWidth
+          variant="outlined"
+          value={recurrencePattern}
+          onChange={(e) => setRecurrencePattern(e.target.value)}
         />
       </DialogContent>
       <DialogActions>

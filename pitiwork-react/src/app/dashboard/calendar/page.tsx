@@ -4,11 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { useKeycloak } from '@react-keycloak/web';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, GlobalStyles } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, GlobalStyles, Checkbox, FormControlLabel, Box } from '@mui/material';
 import AddEventDialog from '@/components/calendar/AddEventDialog';
 import EditEventDialog from '@/components/calendar/EditEventDialog';
 import ConfirmDeleteDialog from '@/components/calendar/ConfirmDeleteDialog';
 import CalendarToolbar from '@/components/calendar/CalendarToolbar';
+import { getLabelText, getLabelColor } from '@/utils/calendar-labels';
+import { getStatusText, getStatusColor } from '@/utils/calendar-status';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const localizer = momentLocalizer(moment);
@@ -181,6 +183,14 @@ const CalendarPage: React.FC = () => {
         view={view}
         onNavigate={newDate => setDate(newDate)}
         onView={newView => setView(newView)}
+        eventPropGetter={(event) => {
+          const backgroundColor = getLabelColor(event.originalEvent.Label);
+          return {
+            style: {
+              backgroundColor,
+            },
+          };
+        }}
         components={{
           toolbar: CalendarToolbar,
         }}
@@ -207,9 +217,44 @@ const CalendarPage: React.FC = () => {
                   <strong>Location:</strong> {selectedEvent.originalEvent.Location}
                 </Typography>
               )}
-              <Typography variant="body1">
-                <strong>All Day:</strong> {selectedEvent.allDay ? 'Yes' : 'No'}
-              </Typography>
+              {selectedEvent.originalEvent.Label !== undefined && (
+                <Typography component="div" variant="body1">
+                  <strong>Label:</strong>
+                  <Box sx={{ display: 'inline-flex', alignItems: 'center', ml: 1 }}>
+                    <Box sx={{ width: 16, height: 16, bgcolor: getLabelColor(selectedEvent.originalEvent.Label), borderRadius: '4px', mr: 1 }} />
+                    {getLabelText(selectedEvent.originalEvent.Label)}
+                  </Box>
+                </Typography>
+              )}
+              {selectedEvent.originalEvent.Status !== undefined && (
+                <Typography component="div" variant="body1">
+                  <strong>Status:</strong>
+                  <Box sx={{ display: 'inline-flex', alignItems: 'center', ml: 1 }}>
+                    <Box sx={{ width: 16, height: 16, bgcolor: getStatusColor(selectedEvent.originalEvent.Status), borderRadius: '4px', mr: 1 }} />
+                    {getStatusText(selectedEvent.originalEvent.Status)}
+                  </Box>
+                </Typography>
+              )}
+              {selectedEvent.originalEvent.RecurrenceInfoXml && (
+                <Typography variant="body1">
+                  <strong>Recurrence Info:</strong> {selectedEvent.originalEvent.RecurrenceInfoXml}
+                </Typography>
+              )}
+              {selectedEvent.originalEvent.RecurrencePattern && (
+                <Typography variant="body1">
+                  <strong>Recurrence Pattern:</strong> {selectedEvent.originalEvent.RecurrencePattern}
+                </Typography>
+              )}
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={selectedEvent.allDay}
+                    readOnly
+                    color="primary"
+                  />
+                }
+                label="All Day"
+              />
             </>
           )}
         </DialogContent>

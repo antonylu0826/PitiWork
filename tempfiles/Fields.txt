@@ -1,0 +1,11 @@
+#PersonalCalendar
+
+-Status
+0: Free 白色
+1: Working Elsewhere 紫色
+2: Tentative 綠色
+3: Busy 藍色
+4: Out Of Office 暗橙色
+
+-RecurrenceInfoXml
+0：Does not repeat
