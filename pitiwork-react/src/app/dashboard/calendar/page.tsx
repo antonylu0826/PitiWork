@@ -12,14 +12,17 @@ import CalendarToolbar from '@/components/calendar/CalendarToolbar';
 import { getLabelText, getLabelColor } from '@/utils/calendar-labels';
 import { getStatusText, getStatusColor } from '@/utils/calendar-status';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import CachedIcon from '@mui/icons-material/Cached'; // Import the recurring icon
+import { expandRecurrentEvents } from '@/utils/recurrence';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const localizer = momentLocalizer(moment);
 
 const CustomEvent = ({ event }) => (
-  <div>
-    {event.allDay && <AccessTimeIcon sx={{ fontSize: 'medium', verticalAlign: 'middle', mr: 0.5 }} />}
-    <span>{event.title}</span>
+  <div style={{ display: 'flex', alignItems: 'center' }}>
+    {event.originalEvent.Type === 1 && <CachedIcon sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />}
+    {event.allDay && <AccessTimeIcon sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />}
+    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{event.title}</span>
   </div>
 );
 
@@ -34,6 +37,7 @@ interface PersonalCalendarEvent {
   Label: number;
   Status: number;
   Type: number;
+  RecurrenceInfoXml: string | null;
   ResourceId: string | null;
   RemindIn: string | null;
   ReminderInfoXml: string | null;
@@ -62,10 +66,15 @@ const CalendarPage: React.FC = () => {
   const [date, setDate] = useState(new Date());
   const [view, setView] = useState<any>('month');
 
-  const fetchEvents = React.useCallback(async () => {
+  const fetchEvents = React.useCallback(async (viewInfo?: { start: Date; end: Date }) => {
     if (!initialized || !keycloak.authenticated) {
       return;
     }
+
+    const currentViewRange = viewInfo || {
+      start: moment(date).startOf('month').toDate(),
+      end: moment(date).endOf('month').toDate(),
+    };
 
     try {
       const response = await fetch('http://localhost:5003/api/odata/PersonalCalendar', {
@@ -77,23 +86,33 @@ const CalendarPage: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      const formattedEvents: CalendarEvent[] = data.value.map((event: PersonalCalendarEvent) => ({
-        id: event.Oid,
-        title: event.Subject,
-        start: new Date(event.StartOn),
-        end: new Date(event.EndOn),
-        allDay: event.AllDay,
-        originalEvent: event,
-      }));
+
+      const formattedEvents: CalendarEvent[] = data.value.flatMap((event: PersonalCalendarEvent) => {
+        if (event.Type === 1 && event.RecurrenceInfoXml) {
+          return expandRecurrentEvents(event, currentViewRange);
+        } else {
+          return [{
+            id: event.Oid,
+            title: event.Subject,
+            start: new Date(event.StartOn),
+            end: new Date(event.EndOn),
+            allDay: event.AllDay,
+            originalEvent: event,
+          }];
+        }
+      });
+
       setEvents(formattedEvents);
     } catch (error) {
       console.error('Error fetching calendar events:', error);
     }
-  }, [initialized, keycloak.authenticated, keycloak.token]);
+  }, [initialized, keycloak.authenticated, keycloak.token, date]);
 
   useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+    const start = moment(date).startOf(view as any).toDate();
+    const end = moment(date).endOf(view as any).toDate();
+    fetchEvents({ start, end });
+  }, [fetchEvents, date, view]);
 
   const handleSelectEvent = (event: CalendarEvent) => {
     setSelectedEvent(event);
@@ -191,8 +210,13 @@ const CalendarPage: React.FC = () => {
         onSelectEvent={handleSelectEvent}
         date={date}
         view={view}
-        onNavigate={newDate => setDate(newDate)}
-        onView={newView => setView(newView)}
+        onNavigate={(newDate) => setDate(newDate)}
+        onView={(newView) => setView(newView)}
+        onRangeChange={(range) => {
+          if ('start' in range && 'end' in range) {
+            fetchEvents({ start: range.start, end: range.end });
+          }
+        }}
         eventPropGetter={(event) => {
           const backgroundColor = getLabelColor(event.originalEvent.Label);
           return {
