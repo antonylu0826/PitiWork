@@ -24,8 +24,8 @@ export interface PersonalCalendarEvent {
 export interface CalendarEvent {
   id: string;
   title: string;
-  start: Date;
-  end: Date;
+  start: moment.Moment; // Use moment object directly
+  end: moment.Moment;   // Use moment object directly
   allDay?: boolean;
   resource?: unknown;
   originalEvent: PersonalCalendarEvent;
@@ -36,9 +36,8 @@ export interface RecurrenceInfo {
   startDate: Date;
   endDate?: Date;
   weekDays?: number;
-  weekOfMonth?: number;
   occurrenceCount?: number;
-  range: number;
+  range?: number;
   month?: number;
   dayNumber?: number;
 }
@@ -67,29 +66,28 @@ export const parseRecurrenceInfoXml = (xmlString: string): RecurrenceInfo | null
     const startDate = moment(startDateAttr, "MM/DD/YYYY HH:mm:ss").toDate();
     const endDateAttr = recurrenceInfoNode.getAttribute("End");
     const endDate = endDateAttr ? moment(endDateAttr, "MM/DD/YYYY HH:mm:ss").toDate() : undefined;
+    
+    const rangeAttr = recurrenceInfoNode.getAttribute("Range");
+    const range = rangeAttr ? Number.parseInt(rangeAttr, 10) : undefined;
+    const occurrenceCountAttr = recurrenceInfoNode.getAttribute("OccurrenceCount");
+    const occurrenceCount = occurrenceCountAttr ? Number.parseInt(occurrenceCountAttr, 10) : undefined;
 
     const weekDaysAttr = recurrenceInfoNode.getAttribute("WeekDays");
     const weekDays = weekDaysAttr ? Number.parseInt(weekDaysAttr, 10) : undefined;
-    const occurrenceCountAttr = recurrenceInfoNode.getAttribute("OccurrenceCount");
-    const occurrenceCount = occurrenceCountAttr ? Number.parseInt(occurrenceCountAttr, 10) : undefined;
-    const range = Number.parseInt(recurrenceInfoNode.getAttribute("Range") || '0', 10);
     const monthAttr = recurrenceInfoNode.getAttribute("Month");
     const month = monthAttr ? Number.parseInt(monthAttr, 10) : undefined;
     const dayNumberAttr = recurrenceInfoNode.getAttribute("DayNumber");
     const dayNumber = dayNumberAttr ? Number.parseInt(dayNumberAttr, 10) : undefined;
-    const weekOfMonthAttr = recurrenceInfoNode.getAttribute("WeekOfMonth");
-    const weekOfMonth = weekOfMonthAttr ? Number.parseInt(weekOfMonthAttr, 10) : undefined;
 
     return {
       type,
       startDate,
       endDate,
-      weekDays,
-      occurrenceCount,
       range,
+      occurrenceCount,
+      weekDays,
       month,
       dayNumber,
-      weekOfMonth,
     };
   } catch (error) {
     console.error("Error parsing RecurrenceInfoXml:", error);
@@ -111,15 +109,15 @@ const createEventOccurrence = (baseEvent: PersonalCalendarEvent, recurrenceStart
         hour: patternStartMoment.hour(),
         minute: patternStartMoment.minute(),
         second: patternStartMoment.second(),
-    }).toDate();
+    });
 
-    const newEnd = moment(newStart).add(eventDuration).toDate();
+    const newEnd = newStart.clone().add(eventDuration);
 
     return {
         id: `${baseEvent.Oid}-${occurrenceIndex}`,
         title: baseEvent.Subject,
-        start: newStart,
-        end: newEnd,
+        start: newStart, // Return moment object
+        end: newEnd,     // Return moment object
         allDay: baseEvent.AllDay,
         originalEvent: baseEvent,
     };
@@ -139,26 +137,25 @@ export const expandRecurrentEvents = (
   }
 
   const expandedEvents: CalendarEvent[] = [];
-  const { type, startDate, endDate, weekDays, occurrenceCount, range, month, dayNumber, weekOfMonth } = info;
+  const { type, startDate, endDate, range, occurrenceCount, weekDays, month, dayNumber } = info;
 
   const viewStartMoment = moment(viewRange.start).startOf('day');
   const viewEndMoment = moment(viewRange.end).endOf('day');
   
-  let occurrences = 0;
-  const maxOccurrences = (range === 2 && occurrenceCount) ? occurrenceCount : Infinity;
   const patternEndDate = (range === 1 && endDate) ? moment(endDate).endOf('day') : viewEndMoment.clone().add(5, 'years');
-  
-  let currentDate = moment(startDate);
+  const maxOccurrences = (range === 2 && occurrenceCount) ? occurrenceCount : Infinity;
+
+  let currentDate = moment(startDate).startOf('day');
+  let occurrences = 0;
 
   let iterationCount = 0;
-  const maxIterations = 365 * 2; // Max 2 years of iterations for safety
+  const maxIterations = 365 * 10;
 
-  while (currentDate.isBefore(patternEndDate) && occurrences < maxOccurrences && iterationCount < maxIterations) {
+  while (currentDate.isSameOrBefore(patternEndDate) && occurrences < maxOccurrences && iterationCount < maxIterations) {
     iterationCount++;
     let isValidOccurrence = false;
 
-    // Check if the current date is a valid occurrence according to the pattern
-    if (currentDate.isSameOrAfter(moment(startDate))) {
+    if (currentDate.isSameOrAfter(moment(startDate), 'day')) {
         switch (type) {
             case 0: // Daily
                 isValidOccurrence = true;
@@ -169,13 +166,12 @@ export const expandRecurrentEvents = (
                 }
                 break;
             case 2: // Monthly
-                const dayOfMonthToMatch = dayNumber || moment(startDate).date();
-                if (currentDate.date() === dayOfMonthToMatch) {
+                if (dayNumber && currentDate.date() === dayNumber) {
                     isValidOccurrence = true;
                 }
                 break;
             case 3: // Yearly
-                if (month && dayNumber && currentDate.month() + 1 === month && currentDate.date() === dayNumber) {
+                if (month && dayNumber && (currentDate.month() + 1) === month && currentDate.date() === dayNumber) {
                     isValidOccurrence = true;
                 }
                 break;
@@ -189,18 +185,7 @@ export const expandRecurrentEvents = (
         }
     }
 
-    // Move to the next potential date
-    switch (type) {
-        case 2: // Monthly
-            currentDate.add(1, 'month');
-            break;
-        case 3: // Yearly
-            currentDate.add(1, 'year');
-            break;
-        default: // Daily and Weekly
-            currentDate.add(1, 'day');
-            break;
-    }
+    currentDate.add(1, 'day');
   }
 
   return expandedEvents;

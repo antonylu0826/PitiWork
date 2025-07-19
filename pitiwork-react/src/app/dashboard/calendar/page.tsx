@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useKeycloak } from '@react-keycloak/web';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
+import { Calendar, momentLocalizer, EventProps } from 'react-big-calendar';
 import moment from 'moment';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, GlobalStyles, Checkbox, FormControlLabel, Box } from '@mui/material';
 import AddEventDialog from '@/components/calendar/AddEventDialog';
@@ -12,48 +12,19 @@ import CalendarToolbar from '@/components/calendar/CalendarToolbar';
 import { getLabelText, getLabelColor } from '@/utils/calendar-labels';
 import { getStatusText, getStatusColor } from '@/utils/calendar-status';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import CachedIcon from '@mui/icons-material/Cached'; // Import the recurring icon
-import { expandRecurrentEvents } from '@/utils/recurrence';
+import CachedIcon from '@mui/icons-material/Cached';
+import { expandRecurrentEvents, CalendarEvent, PersonalCalendarEvent } from '@/utils/recurrence';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const localizer = momentLocalizer(moment);
 
-const CustomEvent = ({ event }) => (
+const CustomEvent: React.FC<EventProps<CalendarEvent>> = ({ event }) => (
   <div style={{ display: 'flex', alignItems: 'center' }}>
     {event.originalEvent.Type === 1 && <CachedIcon sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />}
     {event.allDay && <AccessTimeIcon sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />}
     <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{event.title}</span>
   </div>
 );
-
-interface PersonalCalendarEvent {
-  Oid: string;
-  StartOn: string;
-  EndOn: string;
-  Subject: string;
-  Description: string | null;
-  AllDay: boolean;
-  Location: string | null;
-  Label: number;
-  Status: number;
-  Type: number;
-  RecurrenceInfoXml: string | null;
-  ResourceId: string | null;
-  RemindIn: string | null;
-  ReminderInfoXml: string | null;
-  AlarmTime: string | null;
-  IsPostponed: boolean;
-}
-
-interface CalendarEvent {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  allDay?: boolean;
-  resource?: any;
-  originalEvent: PersonalCalendarEvent; // Store original data
-}
 
 const CalendarPage: React.FC = () => {
   const { keycloak, initialized } = useKeycloak();
@@ -88,14 +59,15 @@ const CalendarPage: React.FC = () => {
       const data = await response.json();
 
       const formattedEvents: CalendarEvent[] = data.value.flatMap((event: PersonalCalendarEvent) => {
+        console.log('Raw StartOn:', event.StartOn, 'Raw EndOn:', event.EndOn);
         if (event.Type === 1 && event.RecurrenceInfoXml) {
           return expandRecurrentEvents(event, currentViewRange);
         } else {
           return [{
             id: event.Oid,
             title: event.Subject,
-            start: new Date(event.StartOn),
-            end: new Date(event.EndOn),
+            start: moment(event.StartOn), 
+            end: moment(event.EndOn),     
             allDay: event.AllDay,
             originalEvent: event,
           }];
@@ -202,10 +174,9 @@ const CalendarPage: React.FC = () => {
       </div>
       <Calendar
         localizer={localizer}
-        showAllEvents={true}
         events={events}
-        startAccessor="start"
-        endAccessor="end"
+        startAccessor={(event) => (event.start as moment.Moment).toDate()}
+        endAccessor={(event) => (event.end as moment.Moment).toDate()}
         style={{ height: '100%' }}
         onSelectEvent={handleSelectEvent}
         date={date}
@@ -237,10 +208,10 @@ const CalendarPage: React.FC = () => {
           {selectedEvent && (
             <>
               <Typography variant="body1">
-                <strong>Start:</strong> {moment(selectedEvent.start).format('YYYY-MM-DD HH:mm')}
+                <strong>Start:</strong> {selectedEvent.start.format('YYYY-MM-DD HH:mm')}
               </Typography>
               <Typography variant="body1">
-                <strong>End:</strong> {moment(selectedEvent.end).format('YYYY-MM-DD HH:mm')}
+                <strong>End:</strong> {selectedEvent.end.format('YYYY-MM-DD HH:mm')}
               </Typography>
               {selectedEvent.originalEvent.Description && (
                 <Typography variant="body1">
@@ -306,13 +277,13 @@ const CalendarPage: React.FC = () => {
       <AddEventDialog
         open={openAddEventDialog}
         onClose={() => setOpenAddEventDialog(false)}
-        onEventAdded={fetchEvents} // Pass fetchEvents to refresh the calendar
+        onEventAdded={fetchEvents}
       />
 
       <EditEventDialog
         open={openEditEventDialog}
         onClose={() => setOpenEditEventDialog(false)}
-        event={selectedEvent ? selectedEvent.originalEvent : null}
+        event={selectedEvent}
         onEventUpdated={fetchEvents}
       />
 
