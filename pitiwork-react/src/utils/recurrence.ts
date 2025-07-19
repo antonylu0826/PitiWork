@@ -145,7 +145,7 @@ export const expandRecurrentEvents = (
   const patternEndDate = (range === 1 && endDate) ? moment(endDate).endOf('day') : viewEndMoment.clone().add(5, 'years');
   const maxOccurrences = (range === 2 && occurrenceCount) ? occurrenceCount : Infinity;
 
-  let currentDate = moment(startDate).startOf('day');
+  const currentDate = moment(startDate).startOf('day');
   let occurrences = 0;
 
   let iterationCount = 0;
@@ -157,24 +157,28 @@ export const expandRecurrentEvents = (
 
     if (currentDate.isSameOrAfter(moment(startDate), 'day')) {
         switch (type) {
-            case 0: // Daily
+            case 0: { // Daily
                 isValidOccurrence = true;
                 break;
-            case 1: // Weekly
+            }
+            case 1: { // Weekly
                 if (weekDays && (getWeekDayNumber(currentDate) & weekDays) !== 0) {
                     isValidOccurrence = true;
                 }
                 break;
-            case 2: // Monthly
+            }
+            case 2: { // Monthly
                 if (dayNumber && currentDate.date() === dayNumber) {
                     isValidOccurrence = true;
                 }
                 break;
-            case 3: // Yearly
+            }
+            case 3: { // Yearly
                 if (month && dayNumber && (currentDate.month() + 1) === month && currentDate.date() === dayNumber) {
                     isValidOccurrence = true;
                 }
                 break;
+            }
         }
     }
 

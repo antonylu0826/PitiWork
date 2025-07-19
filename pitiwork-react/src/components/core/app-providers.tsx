@@ -12,11 +12,11 @@ interface AppProvidersProps {
   children: React.ReactNode;
 }
 
-export function AppProviders({ children }: AppProvidersProps): React.JSX.Element {
-  const handleTokens = (tokens: { token: string; idToken: string; refreshToken: string }) => {
-    console.log('Keycloak tokens received:', tokens);
-  };
+const handleTokens = (tokens: { token: string; idToken: string; refreshToken: string }) => {
+  console.log('Keycloak tokens received:', tokens);
+};
 
+export function AppProviders({ children }: AppProvidersProps): React.JSX.Element {
   return (
     <ReactKeycloakProvider
       authClient={keycloak}

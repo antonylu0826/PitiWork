@@ -5,10 +5,10 @@ import { useKeycloak } from '@react-keycloak/web';
 import { Calendar, momentLocalizer, EventProps } from 'react-big-calendar';
 import moment from 'moment';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, GlobalStyles, Checkbox, FormControlLabel, Box } from '@mui/material';
-import AddEventDialog from '@/components/calendar/AddEventDialog';
-import EditEventDialog from '@/components/calendar/EditEventDialog';
-import ConfirmDeleteDialog from '@/components/calendar/ConfirmDeleteDialog';
-import CalendarToolbar from '@/components/calendar/CalendarToolbar';
+import AddEventDialog from '@/components/calendar/add-event-dialog';
+import EditEventDialog from '@/components/calendar/edit-event-dialog';
+import ConfirmDeleteDialog from '@/components/calendar/confirm-delete-dialog';
+import CalendarToolbar from '@/components/calendar/calendar-toolbar';
 import { getLabelText, getLabelColor } from '@/utils/calendar-labels';
 import { getStatusText, getStatusColor } from '@/utils/calendar-status';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -35,7 +35,7 @@ const CalendarPage: React.FC = () => {
   const [openEditEventDialog, setOpenEditEventDialog] = useState(false);
   const [openConfirmDeleteDialog, setOpenConfirmDeleteDialog] = useState(false);
   const [date, setDate] = useState(new Date());
-  const [view, setView] = useState<any>('month');
+  const [view, setView] = useState<'month' | 'week' | 'day' | 'agenda'>('month');
 
   const fetchEvents = React.useCallback(async (viewInfo?: { start: Date; end: Date }) => {
     if (!initialized || !keycloak.authenticated) {
@@ -60,10 +60,7 @@ const CalendarPage: React.FC = () => {
 
       const formattedEvents: CalendarEvent[] = data.value.flatMap((event: PersonalCalendarEvent) => {
         console.log('Raw StartOn:', event.StartOn, 'Raw EndOn:', event.EndOn);
-        if (event.Type === 1 && event.RecurrenceInfoXml) {
-          return expandRecurrentEvents(event, currentViewRange);
-        } else {
-          return [{
+        return event.Type === 1 && event.RecurrenceInfoXml ? expandRecurrentEvents(event, currentViewRange) : [{
             id: event.Oid,
             title: event.Subject,
             start: moment(event.StartOn), 
@@ -71,7 +68,6 @@ const CalendarPage: React.FC = () => {
             allDay: event.AllDay,
             originalEvent: event,
           }];
-        }
       });
 
       setEvents(formattedEvents);
@@ -81,8 +77,8 @@ const CalendarPage: React.FC = () => {
   }, [initialized, keycloak.authenticated, keycloak.token, date]);
 
   useEffect(() => {
-    const start = moment(date).startOf(view as any).toDate();
-    const end = moment(date).endOf(view as any).toDate();
+    const start = moment(date).startOf(view).toDate();
+    const end = moment(date).endOf(view).toDate();
     fetchEvents({ start, end });
   }, [fetchEvents, date, view]);
 
@@ -218,6 +214,9 @@ const CalendarPage: React.FC = () => {
                   <strong>Description:</strong> {selectedEvent.originalEvent.Description}
                 </Typography>
               )}
+              <Typography variant="body1">
+                <strong>Recurrent Event:</strong> {selectedEvent.originalEvent.Type === 1 ? 'Yes' : 'No'}
+              </Typography>
               {selectedEvent.originalEvent.Location && (
                 <Typography variant="body1">
                   <strong>Location:</strong> {selectedEvent.originalEvent.Location}
